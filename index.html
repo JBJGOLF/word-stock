@@ -1,0 +1,661 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>주식 수익률 계산기</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background-color: #f5f5f5;
+            margin: 0;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: linear-gradient(145deg,#e6e8e9,#f5f6f7);
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.15);
+            border: 1px solid #c0c5c9;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        
+        .header h1 {
+            font-size: 24px;
+            color: #445566;
+            margin: 0;
+        }
+        
+        .tabs {
+            display: flex;
+            margin-bottom: 20px;
+        }
+        
+        .tab-btn {
+            flex: 1;
+            padding: 10px;
+            font-weight: bold;
+            cursor: pointer;
+            border: 1px solid #c0c5c9;
+            text-align: center;
+            transition: all 0.3s;
+        }
+        
+        .tab-btn:first-child {
+            border-radius: 5px 0 0 5px;
+        }
+        
+        .tab-btn:last-child {
+            border-radius: 0 5px 5px 0;
+        }
+        
+        .tab-btn.active {
+            background: linear-gradient(145deg,#5b6d80,#445566);
+            color: white;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+        
+        .tab-btn:not(.active) {
+            background: #e6e8e9;
+            color: #667788;
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        .calculator-box {
+            background: #fff;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            border: 1px solid #c0c5c9;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+        }
+        
+        .input-group {
+            margin-bottom: 15px;
+        }
+        
+        .input-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #445566;
+        }
+        
+        .input-wrapper {
+            position: relative;
+        }
+        
+        .input-wrapper input, 
+        .input-wrapper select {
+            width: 100%;
+            padding: 10px;
+            font-size: 16px;
+            border: 1px solid #c0c5c9;
+            border-radius: 5px;
+            box-sizing: border-box;
+            background: #fcfdfe;
+        }
+        
+        .input-wrapper .unit {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #445566;
+            font-weight: bold;
+        }
+        
+        button {
+            width: 100%;
+            padding: 15px;
+            font-size: 18px;
+            font-weight: bold;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .calc-btn {
+            background: linear-gradient(145deg,#5b6d80,#445566);
+            color: white;
+            margin-top: 15px;
+            box-shadow: 0 3px 6px rgba(68,85,102,0.3);
+        }
+        
+        .reset-btn {
+            background: linear-gradient(145deg,#c14040,#9e2a2a);
+            color: white;
+            margin-top: 15px;
+            box-shadow: 0 3px 6px rgba(0,0,0,0.2);
+        }
+        
+        button:hover {
+            box-shadow: 0 5px 10px rgba(0,0,0,0.3);
+            transform: translateY(-2px);
+        }
+        
+        .result-section {
+            background: #fff;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+            border: 1px solid #c0c5c9;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+            display: none;
+        }
+        
+        .result-summary {
+            margin-bottom: 10px;
+            border-bottom: 1px solid #d6dde4;
+            padding-bottom: 8px;
+        }
+        
+        .result-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 5px;
+        }
+        
+        .result-label {
+            font-size: 13px;
+            color: #445566;
+            font-weight: bold;
+        }
+        
+        .result-value {
+            font-weight: bold;
+            color: #333;
+        }
+        
+        .result-highlight {
+            text-align: center;
+            margin-bottom: 10px;
+            padding: 12px;
+            border-radius: 8px;
+            background: linear-gradient(145deg,#eef0f2,#f8f9fa);
+            box-shadow: inset 0 1px 1px rgba(255,255,255,0.6), 0 1px 3px rgba(0,0,0,0.05);
+            border: 1px solid #d6dde4;
+        }
+        
+        .result-highlight-label {
+            font-size: 14px;
+            color: #445566;
+            margin-bottom: 3px;
+            font-weight: bold;
+        }
+        
+        .result-highlight-value {
+            font-size: 24px;
+            font-weight: bold;
+            text-shadow: 0 1px 1px rgba(255,255,255,0.7);
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 600px;
+        }
+        
+        th {
+            padding: 12px 15px;
+            text-align: left;
+            color: #445566;
+            font-weight: bold;
+            background: #e6e8e9;
+            border-bottom: 2px solid #c0c5c9;
+        }
+        
+        td {
+            padding: 12px 15px;
+            color: #333;
+            border-bottom: 1px solid #d6dde4;
+        }
+        
+        tr:nth-child(even) {
+            background: #f8f9fa;
+        }
+        
+        .ad-container {
+            border: 1px dashed #a0a8b0;
+            border-radius: 5px;
+            padding: 10px;
+            margin: 15px 0;
+            text-align: center;
+            background: #f8f9fa;
+            max-width: 100%;
+            overflow: hidden;
+            position: relative;
+        }
+        
+        .ad-title {
+            font-size: 18px;
+            color: #445566;
+            margin-bottom: 5px;
+            font-weight: bold;
+            text-align: center;
+        }
+        
+        .fee-note {
+            margin-top: 20px;
+            padding: 15px;
+            background: #f0f2f5;
+            border-radius: 8px;
+            border: 1px solid #d6dde4;
+        }
+        
+        .fee-note h4 {
+            color: #445566;
+            margin-top: 0;
+            margin-bottom: 10px;
+        }
+        
+        .fee-note ul {
+            color: #667788;
+            margin: 0;
+            padding-left: 20px;
+        }
+        
+        .fee-note li {
+            margin-bottom: 5px;
+        }
+        
+        .table-container {
+            overflow-x: auto;
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                padding: 15px;
+            }
+            
+            .calculator-box {
+                padding: 12px;
+            }
+            
+            button {
+                padding: 12px;
+                font-size: 16px;
+            }
+            
+            .result-highlight-value {
+                font-size: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>주식 수익률 계산기 📈</h1>
+        </div>
+        
+        <div class="tabs">
+            <div id="calculator-tab" class="tab-btn active">계산기</div>
+            <div id="fee-info-tab" class="tab-btn">수수료 정보</div>
+        </div>
+        
+        <!-- 계산기 섹션 -->
+        <div id="calculator-section" class="tab-content active">
+            <div class="calculator-box">
+                <div class="input-group">
+                    <label>💰 매수 가격</label>
+                    <div class="input-wrapper">
+                        <input id="buy-price" type="tel" inputmode="numeric" placeholder="주당 매수 가격 입력">
+                        <span class="unit">원</span>
+                    </div>
+                </div>
+                
+                <div class="input-group">
+                    <label>🔢 보유 수량</label>
+                    <div class="input-wrapper">
+                        <input id="quantity" type="tel" inputmode="numeric" placeholder="주식 수량 입력">
+                        <span class="unit">주</span>
+                    </div>
+                </div>
+                
+                <div class="input-group">
+                    <label>💸 매도 가격</label>
+                    <div class="input-wrapper">
+                        <input id="sell-price" type="tel" inputmode="numeric" placeholder="주당 매도 가격 입력">
+                        <span class="unit">원</span>
+                    </div>
+                </div>
+                
+                <div class="input-group">
+                    <label>🏢 증권사 선택</label>
+                    <div class="input-wrapper">
+                        <select id="broker">
+                            <option value="0.015">키움증권</option>
+                            <option value="0.015">삼성증권</option>
+                            <option value="0.014">미래에셋증권</option>
+                            <option value="0.015">한국투자증권</option>
+                            <option value="0.016">NH투자증권</option>
+                            <option value="0.015">KB증권</option>
+                            <option value="0.015">신한금융투자</option>
+                            <option value="custom">직접 입력</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div id="custom-fee-container" class="input-group" style="display: none;">
+                    <label>🔣 커스텀 수수료율 (%)</label>
+                    <div class="input-wrapper">
+                        <input id="custom-fee" type="number" step="0.001" placeholder="수수료율 직접 입력 (ex: 0.015)">
+                        <span class="unit">%</span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 광고 영역 1 -->
+            <div class="ad-container" style="height: 280px;">
+                <div style="max-width: 100%; height: 250px; overflow: hidden; position: relative;">
+                    <!-- 광고 코드 삽입 위치 -->
+                </div>
+            </div>
+            
+            <button id="calculate-btn" class="calc-btn">계산하기</button>
+            
+            <div id="result" class="result-section">
+                <div class="result-summary">
+                    <div class="result-row">
+                        <div class="result-label">매수금액</div>
+                        <div id="res-buy-total" class="result-value"></div>
+                    </div>
+                    <div class="result-row">
+                        <div class="result-label">매도금액</div>
+                        <div id="res-sell-total" class="result-value"></div>
+                    </div>
+                    <div class="result-row">
+                        <div class="result-label">매수 수수료</div>
+                        <div id="res-buy-fee" class="result-value"></div>
+                    </div>
+                    <div class="result-row">
+                        <div class="result-label">매도 수수료</div>
+                        <div id="res-sell-fee" class="result-value"></div>
+                    </div>
+                </div>
+                
+                <div class="result-highlight">
+                    <div class="result-highlight-label">순수익</div>
+                    <div id="res-profit" class="result-highlight-value"></div>
+                </div>
+                
+                <div class="result-highlight">
+                    <div class="result-highlight-label">수익률</div>
+                    <div id="res-profit-rate" class="result-highlight-value"></div>
+                </div>
+                
+                <!-- 광고 영역 2 -->
+                <div class="ad-container" style="height: 320px;">
+                    <div class="ad-title">✨ 오늘의 특가제품</div>
+                    <div style="max-width: 100%; height: 290px; overflow: hidden; position: relative;">
+                        <!-- 광고 코드 삽입 위치 -->
+                    </div>
+                </div>
+                
+                <button id="reset-btn" class="reset-btn">다시 계산하기</button>
+            </div>
+        </div>
+        
+        <!-- 수수료 정보 섹션 -->
+        <div id="fee-info-section" class="tab-content">
+            <div class="calculator-box">
+                <h3 style="text-align: center; color: #445566; margin-top: 0;">주요 증권사 온라인 수수료 정보</h3>
+                <p style="text-align: center; color: #667788; font-size: 14px; margin-bottom: 20px;">※ 수수료는 증권사 정책에 따라 변경될 수 있습니다. (2025년 3월 기준)</p>
+                
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>증권사</th>
+                                <th style="text-align: center;">매수 수수료</th>
+                                <th style="text-align: center;">매도 수수료</th>
+                                <th style="text-align: center;">기타 정보</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td style="font-weight: bold;">키움증권</td>
+                                <td style="text-align: center;">0.015%</td>
+                                <td style="text-align: center;">0.015%</td>
+                                <td style="text-align: center; font-size: 13px; color: #667788;">기본 온라인 주식거래 수수료</td>
+                            </tr>
+                            <tr>
+                                <td style="font-weight: bold;">삼성증권</td>
+                                <td style="text-align: center;">0.015%</td>
+                                <td style="text-align: center;">0.015%</td>
+                                <td style="text-align: center; font-size: 13px; color: #667788;">프리미엄 서비스 이용 시 우대</td>
+                            </tr>
+                            <tr>
+                                <td style="font-weight: bold;">미래에셋증권</td>
+                                <td style="text-align: center;">0.014%</td>
+                                <td style="text-align: center;">0.014%</td>
+                                <td style="text-align: center; font-size: 13px; color: #667788;">거래량에 따라 우대 가능</td>
+                            </tr>
+                            <tr>
+                                <td style="font-weight: bold;">한국투자증권</td>
+                                <td style="text-align: center;">0.015%</td>
+                                <td style="text-align: center;">0.015%</td>
+                                <td style="text-align: center; font-size: 13px; color: #667788;">자산규모에 따라 우대 혜택</td>
+                            </tr>
+                            <tr>
+                                <td style="font-weight: bold;">NH투자증권</td>
+                                <td style="text-align: center;">0.016%</td>
+                                <td style="text-align: center;">0.016%</td>
+                                <td style="text-align: center; font-size: 13px; color: #667788;">NH멤버스 등급별 우대</td>
+                            </tr>
+                            <tr>
+                                <td style="font-weight: bold;">KB증권</td>
+                                <td style="text-align: center;">0.015%</td>
+                                <td style="text-align: center;">0.015%</td>
+                                <td style="text-align: center; font-size: 13px; color: #667788;">스타클럽 회원 우대</td>
+                            </tr>
+                            <tr>
+                                <td style="font-weight: bold;">신한금융투자</td>
+                                <td style="text-align: center;">0.015%</td>
+                                <td style="text-align: center;">0.015%</td>
+                                <td style="text-align: center; font-size: 13px; color: #667788;">알파 클럽 등급별 우대</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                
+                <div class="fee-note">
+                    <h4>📌 수수료 관련 참고사항</h4>
+                    <ul>
+                        <li>상기 수수료율은 일반 계좌 기준이며, 상품별/고객별 우대 프로그램에 따라 차이가 있을 수 있습니다.</li>
+                        <li>대부분의 증권사는 거래량, 자산규모에 따라 수수료 할인 프로그램을 운영하고 있습니다.</li>
+                        <li>증권거래세 0.23%(코스피/코스닥 동일)는 매도 시에만 부과됩니다.</li>
+                        <li>정확한 수수료는 해당 증권사 홈페이지나 고객센터를 통해 확인하는 것을 권장합니다.</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <!-- 광고 영역 3 -->
+            <div class="ad-container" style="height: 280px;">
+                <div style="max-width: 100%; height: 250px; overflow: hidden; position: relative;">
+                    <!-- 광고 코드 삽입 위치 -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // 탭 전환 기능
+            const calculatorTab = document.getElementById('calculator-tab');
+            const feeInfoTab = document.getElementById('fee-info-tab');
+            const calculatorSection = document.getElementById('calculator-section');
+            const feeInfoSection = document.getElementById('fee-info-section');
+            
+            calculatorTab.addEventListener('click', function() {
+                calculatorTab.classList.add('active');
+                feeInfoTab.classList.remove('active');
+                calculatorSection.classList.add('active');
+                feeInfoSection.classList.remove('active');
+            });
+            
+            feeInfoTab.addEventListener('click', function() {
+                feeInfoTab.classList.add('active');
+                calculatorTab.classList.remove('active');
+                feeInfoSection.classList.add('active');
+                calculatorSection.classList.remove('active');
+            });
+            
+            // 증권사 선택 시 커스텀 수수료 입력란 표시 여부
+            const brokerSelect = document.getElementById('broker');
+            const customFeeContainer = document.getElementById('custom-fee-container');
+            
+            brokerSelect.addEventListener('change', function() {
+                if (this.value === 'custom') {
+                    customFeeContainer.style.display = 'block';
+                } else {
+                    customFeeContainer.style.display = 'none';
+                }
+            });
+            
+            // 숫자 입력 필드 포맷팅
+            const buyPrice = document.getElementById('buy-price');
+            const quantity = document.getElementById('quantity');
+            const sellPrice = document.getElementById('sell-price');
+            
+            // 숫자 포맷팅 함수
+            function formatNumber(input) {
+                let value = input.value.replace(/[^\d]/g, '');
+                if (value) {
+                    input.value = numberWithCommas(parseInt(value));
+                } else {
+                    input.value = '';
+                }
+            }
+            
+            // 천단위 콤마 추가
+            function numberWithCommas(x) {
+                return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+            }
+            
+            // 콤마 제거
+            function removeCommas(str) {
+                return str.replace(/,/g, '');
+            }
+            
+            buyPrice.addEventListener('input', function() { formatNumber(this); });
+            quantity.addEventListener('input', function() { formatNumber(this); });
+            sellPrice.addEventListener('input', function() { formatNumber(this); });
+            
+            // 계산하기 버튼
+            const calculateBtn = document.getElementById('calculate-btn');
+            const resultSection = document.getElementById('result');
+            
+            calculateBtn.addEventListener('click', function() {
+                // 입력값 검증
+                const buyPriceVal = parseInt(removeCommas(buyPrice.value)) || 0;
+                const quantityVal = parseInt(removeCommas(quantity.value)) || 0;
+                const sellPriceVal = parseInt(removeCommas(sellPrice.value)) || 0;
+                
+                if (buyPriceVal <= 0 || quantityVal <= 0 || sellPriceVal <= 0) {
+                    alert('모든 값을 올바르게 입력해주세요.');
+                    return;
+                }
+                
+                // 수수료율 설정
+                let feeRate;
+                if (brokerSelect.value === 'custom') {
+                    const customFeeVal = parseFloat(document.getElementById('custom-fee').value);
+                    if (isNaN(customFeeVal) || customFeeVal <= 0) {
+                        alert('올바른 수수료율을 입력해주세요.');
+                        return;
+                    }
+                    feeRate = customFeeVal / 100;
+                } else {
+                    feeRate = parseFloat(brokerSelect.value) / 100;
+                }
+                
+                // 계산
+                const buyTotal = buyPriceVal * quantityVal;
+                const sellTotal = sellPriceVal * quantityVal;
+                
+                const buyFee = Math.round(buyTotal * feeRate);
+                const sellFee = Math.round(sellTotal * feeRate);
+                
+                // 매도 시 증권거래세 (0.23%) 적용
+                const taxRate = 0.0023;
+                const tax = Math.round(sellTotal * taxRate);
+                
+                // 순수익 계산
+                const profit = sellTotal - sellFee - tax - buyTotal - buyFee;
+                
+                // 수익률 계산 (%)
+                const profitRate = (profit / (buyTotal + buyFee)) * 100;
+                
+                // 결과 표시
+                document.getElementById('res-buy-total').textContent = numberWithCommas(buyTotal) + '원';
+                document.getElementById('res-sell-total').textContent = numberWithCommas(sellTotal) + '원';
+                document.getElementById('res-buy-fee').textContent = numberWithCommas(buyFee) + '원';
+                document.getElementById('res-sell-fee').textContent = numberWithCommas(sellFee + tax) + '원 (세금 포함)';
+                
+                const profitElement = document.getElementById('res-profit');
+                const profitRateElement = document.getElementById('res-profit-rate');
+                
+                profitElement.textContent = numberWithCommas(profit) + '원';
+                profitRateElement.textContent = profitRate.toFixed(2) + '%';
+                
+                // 수익/손실에 따른 색상 변경
+                if (profit > 0) {
+                    profitElement.style.color = '#d14836'; // 빨간색 (수익)
+                    profitRateElement.style.color = '#d14836';
+                } else if (profit < 0) {
+                    profitElement.style.color = '#4285f4'; // 파란색 (손실)
+                    profitRateElement.style.color = '#4285f4';
+                } else {
+                    profitElement.style.color = '#333'; // 검정색 (변동 없음)
+                    profitRateElement.style.color = '#333';
+                }
+                
+                // 결과 섹션 표시
+                resultSection.style.display = 'block';
+                
+                // 결과로 스크롤
+                resultSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            });
+            
+            // 다시 계산하기 버튼
+            const resetBtn = document.getElementById('reset-btn');
+            
+            resetBtn.addEventListener('click', function() {
+                buyPrice.value = '';
+                quantity.value = '';
+                sellPrice.value = '';
+                brokerSelect.value = '0.015'; // 키움증권으로 초기화
+                document.getElementById('custom-fee').value = '';
+                customFeeContainer.style.display = 'none';
+                resultSection.style.display = 'none';
+                
+                // 매수 가격 필드로 포커스
+                buyPrice.focus();
+                
+                // 상단으로 스크롤
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            });
+        });
+    </script>
+</body>
+</html>
